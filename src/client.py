@@ -29,16 +29,16 @@ def start_client(host='127.0.0.1', port=65430):
                     # 1 point: open file and say it to server
                     message = "_code1g"
                     client_socket.sendall(message.encode('utf-8'))
-                    file = open(communication_file, "r")
-                    data = file.readline()
-                    file.close()
 
-                    file = open(communication_file, "w")
-                    time_ = datetime.now()
-                    file.write(str(time_))
-                    file.close()
-                    print("Sent:", time_)
-                    if data != "":
+                    with open(communication_file, "r") as file:
+                        data = file.readline()
+
+                    with open(communication_file, "w") as file:
+                        time_ = datetime.now()
+                        file.write(str(time_))
+                        print("Sent:", time_)
+
+                    if data:
                         print("Received:", data)
 
                     # 2 point: now we can tell server that file is closed

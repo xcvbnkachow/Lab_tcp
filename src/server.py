@@ -8,41 +8,43 @@ port_start = 65430
 port_end = 65440
 
 def handle_client(client_socket):
-    while True:
-        try:
-            # receiving a message from client...
-            message = client_socket.recv(1024).decode('utf-8')
-            if not message:
-                break
-            match message:
-                case "_code1g":
-                    # do nothing :)
-                    # this section is informative, we can just delete it
-                    None
+    try:
+        while True:
+                # receiving a message from client...
+                message = client_socket.recv(1024).decode('utf-8')
+                if not message:
+                    break
+                match message:
+                    case "_code1g":
+                        # do nothing :)
+                        # this section is informative, we can just delete it
+                        pass
 
-                case "_code2g":
-                    file = open(communication_file, "r")
-                    data = file.readline()
-                    file.close()
+                    case "_code2g":
+                        try:
+                            with open(communication_file, "r") as file:
+                                data = file.readline()
 
-                    file = open(communication_file, "w")
-                    answer = random.randint(5, 100) * "+"
-                    file.write(answer)
-                    file.close()
-                    print("Get from client:", data)
-                    print("Sent to client:", answer)
+                            answer = random.randint(5, 100) * "+"
+                            with open(communication_file, "w") as file:
+                                file.write(answer)
 
-                    message = "_code3g"
-                    client_socket.send(message.encode('utf-8'))
+                            print("Get from client:", data)
+                            print("Sent to client:", answer)
 
-        except ConnectionResetError:
-            print("(!) Client disconnected")
-            break
-        except Exception as e:
-            print("(!) Something went wrong:", e)
+                            message = "_code3g"
+                            client_socket.send(message.encode('utf-8'))
 
+                        except Exception as e:
+                            print("(!) Error while handling file:", e)
+                            break
 
-    client_socket.close()
+    except ConnectionResetError:
+        print("(!) Client disconnected")
+    except Exception as e:
+        print("(!) Something went wrong:", e)
+    finally:
+        client_socket.close()
 
 
 def start_server():
