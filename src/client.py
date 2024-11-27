@@ -9,14 +9,18 @@ from datetime import datetime
 # _code1a means that file is opened by client
 # _code2a is about closed file
 # _code3a indicates client that server process with file is over
-communication_file = "../communication.txt"
 
+# parameters:
+communication_file = "../communication.txt"
+port_start = 65430
+port_end = 65440
 
 def start_client(host='127.0.0.1', port=65430):
     print("Starting client...")
-    try:
-        # Создаем сокет
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+
+    for port in range(port_start, port_end):
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
             client_socket.connect((host, port))  # Подключение к серверу
             print(f"Connected to server: {host}:{port}")
 
@@ -53,15 +57,14 @@ def start_client(host='127.0.0.1', port=65430):
                 except Exception as e:
                     print(f"(!) Data communication error: {e}")
                     break
-
-    except ConnectionRefusedError as e:
-        print(f"(!) Cant connect to server")
-    except Exception as e:
-        print(f"(!) Client error: {e}")
-    except FileNotFoundError as e:
-        print(f"(!) Cant open communication file")
-    except Exception as e:
-        print(f"(!) Something went wrong: {e}")
+        except OSError as e:
+            match e:
+                case OSError():
+                    print(f"(!) Port {port} is already in use or server is on another. Trying next port...")
+                case _:
+                    print(f"(!) An unexpected error occurred: {e}")
+        finally:
+            client_socket.close()
 
 
 if __name__ == "__main__":

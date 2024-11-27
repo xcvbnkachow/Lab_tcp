@@ -2,8 +2,11 @@ import socket
 import random
 
 
-#server
+# parameters:
 communication_file = "../communication.txt"
+port_start = 65430
+port_end = 65440
+
 def handle_client(client_socket):
     while True:
         try:
@@ -44,15 +47,26 @@ def handle_client(client_socket):
 
 def start_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    port = 65430
-    server.bind(('localhost', port))
-    server.listen(1)
-    print("Server listening on port", port)
+    for port in range(port_start, port_end):
+        try:
+            server.bind(('localhost', port))
+            server.listen(1)
+            print("Server listening on port", port)
+
+            client_socket, addr = server.accept()
+            print(f"Accepted connection from {addr}")
+            handle_client(client_socket)
+            break
+
+        except OSError as e:
+            match e:
+                case OSError():
+                    print(f"(!) Port {port} is already in use. Trying next port...")
+                case _:
+                    print(f"(!) An unexpected error occurred: {e}")
 
 
-    client_socket, addr = server.accept()
-    print(f"Accepted connection from {addr}")
-    handle_client(client_socket)
+
 
 
 if __name__ == "__main__":
