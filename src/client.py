@@ -9,6 +9,8 @@ from datetime import datetime
 # _code1a means that file is opened by client
 # _code2a is about closed file
 # _code3a indicates client that server process with file is over
+communication_file = "../communication.txt"
+
 
 def start_client(host='127.0.0.1', port=65430):
     print("Starting client...")
@@ -23,11 +25,11 @@ def start_client(host='127.0.0.1', port=65430):
                     # 1 point: open file and say it to server
                     message = "_code1g"
                     client_socket.sendall(message.encode('utf-8'))
-                    file = open("communication.txt", "r")
+                    file = open(communication_file, "r")
                     data = file.readline()
                     file.close()
 
-                    file = open("communication.txt", "w")
+                    file = open(communication_file, "w")
                     time_ = datetime.now()
                     file.write(str(time_))
                     file.close()
@@ -58,6 +60,8 @@ def start_client(host='127.0.0.1', port=65430):
         print(f"(!) Client error: {e}")
     except FileNotFoundError as e:
         print(f"(!) Cant open communication file")
+    except Exception as e:
+        print(f"(!) Something went wrong: {e}")
 
 
 if __name__ == "__main__":
