@@ -1,6 +1,6 @@
 import socket
 import random
-
+#server
 
 def handle_client(client_socket):
     while True:
