@@ -1,6 +1,6 @@
 import socket
-import random
-
+from datetime import datetime
+from xmlrpc.client import DateTime
 
 # parameters:
 communication_file = "../communication.txt"
@@ -25,13 +25,13 @@ def handle_client(client_socket):
                             with open(communication_file, "r") as file:
                                 data = file.readline()
 
-                            answer = random.randint(5, 100) * "+"
+                            answer = "pong"
                             with open(communication_file, "w") as file:
                                 file.write(answer)
 
-                            print("Get from client:", data)
-                            print("Sent to client:", answer)
-
+                            print(datetime.now().time(), "-> Get from client:", data)
+                            print(datetime.now().time(), "-> Sent to client:", answer)
+                            
                             message = "_code3g"
                             client_socket.send(message.encode('utf-8'))
 

@@ -1,6 +1,6 @@
 import socket
 import time
-from datetime import datetime
+
 
 
 
@@ -15,7 +15,7 @@ communication_file = "../communication.txt"
 port_start = 65430
 port_end = 65440
 
-def start_client(host='127.0.0.1', port=65430):
+def start_client(host='127.0.0.1'):
     print("Starting client...")
 
     for port in range(port_start, port_end):
@@ -24,7 +24,7 @@ def start_client(host='127.0.0.1', port=65430):
             client_socket.connect((host, port))  # Подключение к серверу
             print(f"Connected to server: {host}:{port}")
 
-            for i in range(50):  # 5 iterations
+            for i in range(50):  # 50 iterations
                 try:
                     # 1 point: open file and say it to server
                     message = "_code1g"
@@ -34,9 +34,9 @@ def start_client(host='127.0.0.1', port=65430):
                         data = file.readline()
 
                     with open(communication_file, "w") as file:
-                        time_ = datetime.now()
-                        file.write(str(time_))
-                        print("Sent:", time_)
+                        request = "ping"
+                        file.write(request)
+                        print("Sent:", request)
 
                     if data:
                         print("Received:", data)
@@ -57,6 +57,7 @@ def start_client(host='127.0.0.1', port=65430):
                 except Exception as e:
                     print(f"(!) Data communication error: {e}")
                     break
+            break
         except OSError as e:
             match e:
                 case OSError():
