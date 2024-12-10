@@ -1,32 +1,63 @@
 import socket
 import time
 
+"""
+we want like to sync server and client, so we can use special codes, which can be sent between server and client
+it helps to solve multiple opening file problem
+_code1a means that file is opened by client
+_code2a is about closed file
+_code3a indicates client that server process with file is over
+"""
 
+# const parameters:
+ITER_COUNT = 50
+MAX_CLIENTS = 2
+PORT_START = 65430
+PORT_END = 65440
+state_file = "client_state.txt"
+count_of_clients_file = "count_of_clients.txt"
 
+def start_client(HOST="127.0.0.1"):
+    with open(state_file, "r") as f:
+        curr_port = int(f.read())
 
-# we want like to sync server and client, so we can use special codes, which can be sent between server and client
-# it helps to solve multiple opening file problem
-# _code1a means that file is opened by client
-# _code2a is about closed file
-# _code3a indicates client that server process with file is over
+    with open(count_of_clients_file, "r") as f:
+        curr_count = int(f.read())
 
-# parameters:
-communication_file = "../communication.txt"
-port_start = 65430
-port_end = 65440
-
-def start_client(host='127.0.0.1'):
     print("Starting client...")
 
-    for port in range(port_start, port_end):
+    curr_count += 1
+
+    if curr_count > MAX_CLIENTS:
+        with open(state_file, "w") as f:
+            f.write(f"{curr_port}")
+
+        curr_count = MAX_CLIENTS
+        with open(count_of_clients_file, "w") as f:
+            f.write(f"{curr_count}")
+
+        print(f"(!) A number of clients has exceeded the limit! Connection has not been installed...")
+        exit(0)
+
+    else:
+        with open(state_file, "w") as f:
+            f.write(f"{curr_port + 1}")
+
+        with open(count_of_clients_file, "w") as f:
+            f.write(f"{curr_count}")
+
+
+    for port in range(curr_port, PORT_END):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            client_socket.connect((host, port))  # Подключение к серверу
-            print(f"Connected to server: {host}:{port}")
+            client_socket.connect((HOST, port))
+            print(f"Connected to server: {HOST}:{port}")
+            id = client_socket.recv(1024)
+            communication_file = f"../{id.decode()}.txt"
 
-            for i in range(50):  # 50 iterations
+            for i in range(ITER_COUNT):
                 try:
-                    # 1 point: open file and say it to server
+                    # 1 point: open file and inform server
                     message = "_code1g"
                     client_socket.sendall(message.encode('utf-8'))
 
@@ -36,8 +67,9 @@ def start_client(host='127.0.0.1'):
                     with open(communication_file, "w") as file:
                         request = "ping"
                         file.write(request)
-                        print("Sent:", request)
 
+                    if i > 0:
+                        print("Sent:", request)
                     if data:
                         print("Received:", data)
 
@@ -45,7 +77,7 @@ def start_client(host='127.0.0.1'):
                     message = "_code2g"
                     client_socket.sendall(message.encode('utf-8'))
 
-                    # 3 point: than we need to wait message from server that its work with file is done
+                    # 3 point: then we need to wait for a message from the server that its work with the file is done
                     response = client_socket.recv(1024).decode('utf-8')
                     if response == "_code3g":
                         time.sleep(1)
@@ -58,15 +90,12 @@ def start_client(host='127.0.0.1'):
                     print(f"(!) Data communication error: {e}")
                     break
             break
+        except ConnectionRefusedError:
+            print(f"(!) Connection refused on port {port}. Server may not be running.")
         except OSError as e:
-            match e:
-                case OSError():
-                    print(f"(!) Port {port} is already in use or server is on another. Trying next port...")
-                case _:
-                    print(f"(!) An unexpected error occurred: {e}")
+            print(f"(!) An unexpected OS error occurred: {e}")
         finally:
             client_socket.close()
-
 
 if __name__ == "__main__":
     start_client()
